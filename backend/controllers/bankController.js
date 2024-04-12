@@ -90,3 +90,25 @@ export const announcePost = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
+
+
+export const fetchBankDetails = async (req, res) => {
+    try {
+        // Extract bank identifier from request parameters or body
+        const bankId = req.user.bank_id; // Assuming bankId is provided as a URL parameter
+
+        // Retrieve bank details from the database
+        const bank = await Bank.findById(bankId);
+
+        // Check if bank exists
+        if (!bank) {
+            return res.status(404).json({ message: "Bank not found" });
+        }
+
+        // Return bank details
+        return res.status(200).json({ bank });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
