@@ -3,8 +3,8 @@ import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import authRoutes from './routes/authRoutes.js'
-
+import authRoutes from "./routes/authRoutes.js"
+import bankRoutes from "./routes/bankRoutes.js"
 
 dotenv.config()
 const app = express()
@@ -16,6 +16,7 @@ app.use(cors())
 app.use('/file_uploads', express.static('file_uploads'));
 //ROUTES
 app.use("/api/auth",authRoutes)
+app.use("/api/bank",bankRoutes)
 
 
 //MONGOOSE SETUP

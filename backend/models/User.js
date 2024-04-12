@@ -11,16 +11,14 @@ const UserSchema=new mongoose.Schema(
             type:String,
             required:true
         },
-        bio:String,
-        posts: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Post"
-        }],
-        userUpVotedPosts: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Post"
-        }],
-        userDownVotedPosts: [{
+        bloodGroup:{
+            type:String,
+            required:true
+        },
+        lastDonated:{
+            type:Date
+        },
+        posts:[{
             type: mongoose.Schema.Types.ObjectId,
             ref: "Post"
         }]

@@ -19,7 +19,7 @@ export const Register = async (req, res, next) => {
 
 export const Login = async (req, res, next) => {
     try {
-        const { username, password } = req.body
+        const { username, password, bloodGroup } = req.body
         const user = await User.findOne({ username: username })
         if (!user) {
             return res.status(404).json({ msg: "User does not exist. " })
