@@ -1,6 +1,6 @@
 import Bank from "../models/Bank.js";
 import bcrypt from "bcrypt";
-
+import jwt from "jsonwebtoken"
 
 export const bankSingUp = async (req, res) => {
     try {
@@ -31,5 +31,29 @@ export const bankSingUp = async (req, res) => {
         // Handle errors
         console.log(error);
         return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+
+export const bankLogin = async (req, res, next) => {
+    try {
+        const { bankName, password } = req.body;
+        const bank = await Bank.findOne({ bankName });
+
+        if (!bank) {
+            return res.status(404).json({ msg: "Bank does not exist." });
+        } 
+
+        const isMatch = await bcrypt.compare(password, bank.password);
+
+        if (!isMatch) {
+            return res.status(400).json({ msg: "Invalid credentials." });
+        }
+
+        const token = jwt.sign({ bank_id: bank._id }, process.env.JWT_SECRET, { expiresIn: 60 * 60 });
+
+        return res.status(200).json({ token, bank_id: bank._id });
+    } catch (error) {
+        next(error);
     }
 }
