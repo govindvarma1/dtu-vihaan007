@@ -112,3 +112,28 @@ export const fetchBankDetails = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
+
+export const deletePost=async(req,res)=>{
+    try {
+        // Extract post ID from request parameters
+        const postId = req.params.postId;
+
+        // Find the post by ID and delete it
+        const deletedPost = await BankPost.findByIdAndDelete(postId);
+
+        // Check if the post exists
+        if (!deletedPost) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        // Update the associated bank document to remove the post ID from its 'posts' array
+        const bankId = req.user.bank_id; // Assuming bank_id is stored in req.user
+        await Bank.findByIdAndUpdate(bankId, { $pull: { posts: postId } });
+
+        // Return success message
+        return res.status(200).json({ message: "Post deleted successfully" });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
