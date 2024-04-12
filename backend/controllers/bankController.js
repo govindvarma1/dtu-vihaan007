@@ -137,3 +137,29 @@ export const deletePost=async(req,res)=>{
         return res.status(500).json({ message: "Internal server error" });
     }
 }
+
+export const addBloodAvailability = async (req, res) => {
+    try {
+        const { bloodGroup, units } = req.body;
+        const bankId = req.user.bank_id;
+
+        // Find the bank by ID
+        const bank = await Bank.findById(bankId);
+
+        // Check if the bank exists
+        if (!bank) {
+            return res.status(404).json({ message: "Bank not found" });
+        }
+
+        // Update blood availability for the specified blood group
+        bank.bloodAvailability.set(bloodGroup, units);
+
+        // Save the updated bank document
+        await bank.save();
+
+        return res.status(200).json({ message: "Blood availability updated successfully", bank });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};

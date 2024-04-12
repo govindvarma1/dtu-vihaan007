@@ -35,6 +35,11 @@ const BankSchema=new mongoose.Schema(
             type:String,
             required:true
         },
+        bloodAvailability: {
+            type: Map,
+            of: Number,
+            default: {}
+        },
         posts:[{
             type: mongoose.Schema.Types.ObjectId,
             ref: "BankPost"
