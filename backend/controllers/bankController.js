@@ -98,7 +98,7 @@ export const fetchBankDetails = async (req, res) => {
         const bankId = req.user.bank_id; // Assuming bankId is provided as a URL parameter
 
         // Retrieve bank details from the database
-        const bank = await Bank.findById(bankId);
+        const bank = await Bank.findById(bankId).populate('posts');;
 
         // Check if bank exists
         if (!bank) {
