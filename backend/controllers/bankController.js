@@ -163,3 +163,44 @@ export const addBloodAvailability = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+
+export const updateBloodAvailability = async (req, res) => {
+    try {
+        const { operation, bloodGroup, units } = req.body;
+        const bankId = req.user.bank_id;
+
+        // Find the bank by ID
+        const bank = await Bank.findById(bankId);
+
+        // Check if the bank exists
+        if (!bank) {
+            return res.status(404).json({ message: "Bank not found" });
+        }
+
+        // Get the current blood availability for the specified blood group
+        let currentUnits = bank.bloodAvailability.get(bloodGroup) || 0;
+
+        // Update blood availability based on the operation
+        if (operation === "increase") {
+            currentUnits += units;
+        } else if (operation === "decrease") {
+            currentUnits -= units;
+            if (currentUnits < 0) {
+                return res.status(400).json({ message: "Insufficient blood units" });
+            }
+        } else {
+            return res.status(400).json({ message: "Invalid operation" });
+        }
+
+        // Update blood availability for the specified blood group
+        bank.bloodAvailability.set(bloodGroup, currentUnits);
+
+        // Save the updated bank document
+        await bank.save();
+
+        return res.status(200).json({ message: "Blood quantity updated successfully", bank });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
