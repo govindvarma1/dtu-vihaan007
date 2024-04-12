@@ -1,57 +1,37 @@
-import express from 'express';
-import http from 'http';
-import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
-import compression from 'compression';
-import cors from 'cors';
-import mongoose from 'mongoose';
-// import router from './router';
+//importing required libraries
+import dotenv from "dotenv";
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import authRoutes from './routes/authRoutes.js'
 
-const app = express();
 
-// Middleware
-app.use(cors({
-    credentials: true,
-}));
-app.use(compression());
-app.use(cookieParser());
-app.use(bodyParser.json());
+dotenv.config()
+const app = express()
+app.use(express.urlencoded({extended: true, limit:"30mb" }))
+app.use(express.json())
+app.use(cors())
 
-// Define routes
-// app.use('/', router);
-app.get('/',(req,res)=>{
-    res.send("hlifsd");
-});
+//FILE_UPLOADS
+app.use('/file_uploads', express.static('file_uploads'));
+//ROUTES
+app.use("/api/auth",authRoutes)
 
-// Create HTTP server
-const server = http.createServer(app);
 
-// Define port
-const PORT = process.env.PORT || 8080;
-
-// Start server
-server.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
-
-// Connect to MongoDB
-const MONGO_URL = 'mongodb+srv://utkarshk:HFzai05x4LwI4sLn@cluster0.mwegbdk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
-mongoose.Promise = Promise;
-
-async function DBConnect(req,res){
-    try{
-        await mongoose.connect(MONGO_URL);
-        console.log("connected")
-    }catch(err){
-        console.log(err);
+//MONGOOSE SETUP
+async function DBConnect(req, res) {
+    try {
+        await mongoose.connect(process.env.DB_URL);
+        console.log("Connected to database succesfully");
+    } catch (err) {
+        console.error(`The following error occured: ${err}`)
     }
 }
-
 DBConnect();
 
-// mongoose.connect(MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 
-// Handle MongoDB connection errors
-mongoose.connection.on('error', (error) => {
-    console.error('MongoDB connection error:', error);
-});
+app.listen(process.env.PORT, () => {
+    console.log(`server is running on ${process.env.PORT}`);
+})
+
+export default app;
