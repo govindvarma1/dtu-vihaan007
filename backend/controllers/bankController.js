@@ -1,11 +1,11 @@
 import Bank from "../models/Bank.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken"
-
+import BankPost from "../models/BankPost.js"
 export const bankSingUp = async (req, res) => {
     try {
         // Extract data from request body
-        const { bankName, password, } = req.body;
+        const { bankName, password, email, phoneNumber, address, city, state, pincode } = req.body;
 
         // Check if the bank already exists
         const existingBank = await Bank.findOne({ bankName });
@@ -16,10 +16,15 @@ export const bankSingUp = async (req, res) => {
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create a new bank instance
         const newBank = new Bank({
             bankName,
-            password: hashedPassword
+            password: hashedPassword,
+            email,
+            phoneNumber,
+            address,
+            city,
+            state,
+            pincode
         });
 
         // Save the bank to the database
@@ -55,5 +60,55 @@ export const bankLogin = async (req, res, next) => {
         return res.status(200).json({ token, bank_id: bank._id });
     } catch (error) {
         next(error);
+    }
+}
+
+export const announcePost = async (req, res) => {
+    try {
+        const { announcement, bloodGroupRequired, quantity } = req.body;
+
+        // Get the bank ID from the req.user (assuming it's set by middleware)
+        const bankId = req.user.bank_id;
+
+        // Create a new bank post
+        const newBankPost = new BankPost({
+            announcement,
+            bloodGroupRequired,
+            quantity,
+            postedBy: bankId // Assigning the bank ID to the postedBy field
+        });
+
+        // Save the new bank post to the database
+        await newBankPost.save();
+
+        // Update the associated Bank document with the new post ID
+        await Bank.findByIdAndUpdate(bankId, { $push: { posts: newBankPost._id } });
+
+        return res.status(201).json({ message: "Bank post announced successfully", postId: newBankPost._id });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+
+export const fetchBankDetails = async (req, res) => {
+    try {
+        // Extract bank identifier from request parameters or body
+        const bankId = req.user.bank_id; // Assuming bankId is provided as a URL parameter
+
+        // Retrieve bank details from the database
+        const bank = await Bank.findById(bankId).populate('posts');;
+
+        // Check if bank exists
+        if (!bank) {
+            return res.status(404).json({ message: "Bank not found" });
+        }
+
+        // Return bank details
+        return res.status(200).json({ bank });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 }
